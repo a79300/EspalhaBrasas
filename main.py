@@ -17,15 +17,15 @@ bot = commands.Bot(command_prefix="/", intents=intents, help_command=None)
 
 @bot.event
 async def on_ready():
-    print(f"{bot.user.name} está online!")
-    await bot.change_presence(activity=discord.Game(name="/help para ajuda"))
+    print(f"{bot.user.name} is online!")
+    await bot.change_presence(activity=discord.Game(name="/help"))
 
     # Sync slash commands
     try:
         synced = await bot.tree.sync()
-        print(f"Sincronizados {len(synced)} comandos slash")
+        print(f"Synced {len(synced)} slash commands")
     except Exception as e:
-        print(f"Falhou ao sincronizar comandos: {e}")
+        print(f"Failed to sync commands: {e}")
 
 
 async def main():
