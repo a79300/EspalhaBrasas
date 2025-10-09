@@ -218,11 +218,12 @@ class VLR(commands.Cog):
 
         # Create main embed
         embed = discord.Embed(
-            title="🎮 VLR.gg - Valorant Matches",
+            title="VLR.gg - Valorant Matches",
             description=f"**{datetime.now().strftime('%A, %B %d, %Y').upper()}**",
             color=discord.Color.from_rgb(255, 70, 85),  # Valorant red color
             url="https://www.vlr.gg/matches",
         )
+        embed.set_thumbnail(url="https://www.vlr.gg/img/vlr/logo_header.png")
 
         # Add completed matches section
         if completed:
