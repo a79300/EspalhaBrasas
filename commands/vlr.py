@@ -163,7 +163,7 @@ class VLR(commands.Cog):
             return "🟢"  # Green for upcoming
 
     @app_commands.command(
-        name="vlr", description="Mostra os jogos de Valorant de hoje do VLR.gg"
+        name="vlr", description="Shows today's Valorant matches from VLR.gg"
     )
     async def vlr(self, interaction: discord.Interaction):
         await interaction.response.defer()
@@ -172,8 +172,8 @@ class VLR(commands.Cog):
 
         if not matches:
             embed = discord.Embed(
-                title="❌ Erro",
-                description="Não foi possível obter os jogos do VLR.gg",
+                title="❌ Error",
+                description="Could not fetch matches from VLR.gg",
                 color=discord.Color.red(),
             )
             await interaction.followup.send(embed=embed)
@@ -181,8 +181,8 @@ class VLR(commands.Cog):
 
         if len(matches) == 0:
             embed = discord.Embed(
-                title="📅 VLR.gg - Jogos de Hoje",
-                description="Não há jogos programados para hoje.",
+                title="📅 VLR.gg - Today's Matches",
+                description="No matches scheduled for today.",
                 color=discord.Color.blue(),
             )
             await interaction.followup.send(embed=embed)
@@ -204,7 +204,7 @@ class VLR(commands.Cog):
 
         # Create main embed
         embed = discord.Embed(
-            title="🎮 VLR.gg - Jogos de Valorant",
+            title="🎮 VLR.gg - Valorant Matches",
             description=f"**{datetime.now().strftime('%A, %B %d, %Y').upper()}**",
             color=discord.Color.from_rgb(255, 70, 85),  # Valorant red color
             url="https://www.vlr.gg/matches",
@@ -232,10 +232,10 @@ class VLR(commands.Cog):
                 field_value += (
                     f"{team2_flag} **{match['team2']}** `{match['score2']}`\n\n"
                 )
-                field_value += f"**Evento:** {match['event']}\n"
+                field_value += f"**Event:** {match['event']}\n"
                 if match.get("round"):
-                    field_value += f"**Fase:** {match['round']}\n"
-                field_value += f"[🔗 Ver Detalhes]({match['link']})\n\u200b"  # Invisible character for spacing
+                    field_value += f"**Stage:** {match['round']}\n"
+                field_value += f"[🔗 View Details]({match['link']})\n\u200b"  # Invisible character for spacing
 
                 embed.add_field(
                     name=f"{status_emoji} {match['team1']} vs {match['team2']}",
@@ -265,10 +265,10 @@ class VLR(commands.Cog):
                 field_value += (
                     f"{team2_flag} **{match['team2']}** `{match['score2']}`\n\n"
                 )
-                field_value += f"**Evento:** {match['event']}\n"
+                field_value += f"**Event:** {match['event']}\n"
                 if match.get("round"):
-                    field_value += f"**Fase:** {match['round']}\n"
-                field_value += f"[🔗 Ver Detalhes]({match['link']})\n\u200b"  # Invisible character for spacing
+                    field_value += f"**Stage:** {match['round']}\n"
+                field_value += f"[🔗 View Details]({match['link']})\n\u200b"  # Invisible character for spacing
 
                 embed.add_field(
                     name=f"{status_emoji} {match['team1']} vs {match['team2']}",
@@ -298,10 +298,10 @@ class VLR(commands.Cog):
                 field_value = f"⏰ **Upcoming** - {time_info}\n\n"
                 field_value += f"{team1_flag} **{match['team1']}**\n"
                 field_value += f"{team2_flag} **{match['team2']}**\n\n"
-                field_value += f"**Evento:** {match['event']}\n"
+                field_value += f"**Event:** {match['event']}\n"
                 if match.get("round"):
-                    field_value += f"**Fase:** {match['round']}\n"
-                field_value += f"[🔗 Ver Detalhes]({match['link']})\n\u200b"  # Invisible character for spacing
+                    field_value += f"**Stage:** {match['round']}\n"
+                field_value += f"[🔗 View Details]({match['link']})\n\u200b"  # Invisible character for spacing
 
                 embed.add_field(
                     name=f"{status_emoji} {match['team1']} vs {match['team2']}",
@@ -309,7 +309,7 @@ class VLR(commands.Cog):
                     inline=False,
                 )
 
-        footer_text = "Dados obtidos de VLR.gg"
+        footer_text = "Data from VLR.gg"
 
         embed.set_footer(text=footer_text)
         embed.timestamp = datetime.now()

@@ -13,7 +13,7 @@ class Maps(commands.Cog):
         self.bot = bot
 
     @app_commands.command(
-        name="maps", description="Mostra os mapas em rotação no Valorant competitivo"
+        name="maps", description="Shows current Valorant competitive map rotation"
     )
     async def maps(self, interaction: discord.Interaction):
         """Shows current Valorant competitive map rotation"""
@@ -70,7 +70,7 @@ class Maps(commands.Cog):
                     ),
                 )
 
-            patch_text = "Patch desconhecido"
+            patch_text = "Unknown patch"
             maps_list = []
 
             if h2_section:
@@ -122,7 +122,7 @@ class Maps(commands.Cog):
 
             # Create embed
             embed = discord.Embed(
-                title="🗺️ Rotação de Mapas Competitivos",
+                title="🗺️ Competitive Map Rotation",
                 description=f"```yaml\n{patch_text}\n```",
                 color=discord.Color.from_rgb(255, 70, 85),  # Valorant red
             )
@@ -141,7 +141,7 @@ class Maps(commands.Cog):
                     maps_text += f"{emoji} **{map_name}**\n"
 
                 embed.add_field(
-                    name=f"📍 Mapas Ativos ({len(maps_list)}/7)",
+                    name=f"📍 Active Maps ({len(maps_list)}/7)",
                     value=maps_text.strip(),
                     inline=False,
                 )
@@ -151,12 +151,12 @@ class Maps(commands.Cog):
 
             else:
                 embed.add_field(
-                    name="⚠️ Informação Indisponível",
-                    value="Não foi possível obter a lista de mapas.\nTenta novamente mais tarde.",
+                    name="⚠️ Information Unavailable",
+                    value="Could not fetch map list.\nPlease try again later.",
                     inline=False,
                 )
 
-            embed.set_footer(text="Fonte: thespike.gg • Valorant")
+            embed.set_footer(text="Source: thespike.gg • Valorant")
             embed.timestamp = datetime.utcnow()
 
             await interaction.followup.send(embed=embed)
@@ -165,9 +165,7 @@ class Maps(commands.Cog):
             import traceback
 
             traceback.print_exc()
-            await interaction.followup.send(
-                "❌ Erro ao processar informações dos mapas."
-            )
+            await interaction.followup.send("❌ Error processing map information.")
 
 
 async def setup(bot):

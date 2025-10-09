@@ -317,11 +317,11 @@ def create_stats_embed(data: Dict[str, Any], mode: str) -> discord.Embed:
                     else:
                         losses += 1
 
-            # Contar agentes
-            character = stats.get("character", {}).get("name", "Desconhecido")
+            # Count agents
+            character = stats.get("character", {}).get("name", "Unknown")
             agent_count[character] = agent_count.get(character, 0) + 1
 
-    # Calcular médias
+    # Calculate averages
     kd_ratio = round(total_kills / total_deaths, 2) if total_deaths > 0 else total_kills
 
     total_shots = total_headshots + total_bodyshots + total_legshots
@@ -336,22 +336,20 @@ def create_stats_embed(data: Dict[str, Any], mode: str) -> discord.Embed:
         round(total_dmg_per_round / matches_played) if matches_played > 0 else 0
     )
 
-    # Agente mais jogado
+    # Most played agent
     most_played_agent = (
-        max(agent_count, key=agent_count.get) if agent_count else "Desconhecido"
+        max(agent_count, key=agent_count.get) if agent_count else "Unknown"
     )
     agent_icon = get_agent_icon(most_played_agent)
     agent_games = (
-        agent_count.get(most_played_agent, 0)
-        if most_played_agent != "Desconhecido"
-        else 0
+        agent_count.get(most_played_agent, 0) if most_played_agent != "Unknown" else 0
     )
 
-    # Criar embed
+    # Create embed
     mode_title = "Ranked" if mode == "competitive" else "Premier"
     embed = discord.Embed(
-        title=f"🎮 Perfil Valorant - {player_name}#{player_tag}",
-        description=f"┗━━ Região: **{region}**",
+        title=f"🎮 Valorant Profile - {player_name}#{player_tag}",
+        description=f"┗━━ Region: **{region}**",
         color=0xFF4655,
     )
 
@@ -362,9 +360,9 @@ def create_stats_embed(data: Dict[str, Any], mode: str) -> discord.Embed:
             embed.set_thumbnail(url=card["small"])
 
     # Set most played agent as author (top with icon)
-    if agent_icon and most_played_agent != "Desconhecido":
+    if agent_icon and most_played_agent != "Unknown":
         embed.set_author(
-            name=f"Main: {most_played_agent} ({agent_games} partidas)",
+            name=f"Main: {most_played_agent} ({agent_games} matches)",
             icon_url=agent_icon,
         )
 
@@ -374,7 +372,7 @@ def create_stats_embed(data: Dict[str, Any], mode: str) -> discord.Embed:
 
     if matches_played > 0:  # Only show if we have stats
         # Add rank info with custom emoji
-        rank_info = f"{rank_emoji} **{rank}** • Nível **{account_level}** • **{wins}W - {losses}L**\n\n"
+        rank_info = f"{rank_emoji} **{rank}** • Level **{account_level}** • **{wins}W - {losses}L**\n\n"
 
         # Create aligned stats with code block for clean table format
         stats_content = (
@@ -391,16 +389,16 @@ def create_stats_embed(data: Dict[str, Any], mode: str) -> discord.Embed:
         )
 
         embed.add_field(
-            name=f"🎯Estatísticas Gerais ({mode_title})",
+            name=f"🎯General Stats ({mode_title})",
             value=rank_info + stats_content,
             inline=False,
         )
 
-    # Histórico de Partidas Recentes
+    # Recent Match History
     if matches_data.get("data") and matches_data["data"]:
         match_history = ""
         for match in matches_data["data"][:5]:
-            # Verificar se match e suas propriedades existem
+            # Check if match and its properties exist
             if not match:
                 continue
             if "players" not in match or match["players"] is None:
@@ -459,7 +457,7 @@ def create_stats_embed(data: Dict[str, Any], mode: str) -> discord.Embed:
             map_name = match["metadata"]["map"]
             agent = player_stats["character"]
 
-            # Compact format in a single line (sem "K/D:" label)
+            # Compact format in a single line
             line = (
                 f"{result_emoji} **{map_name}** • {agent} • "
                 f"`{score}` • `{kills}/{deaths}/{assists}` • `{match_kd}`"
@@ -468,12 +466,10 @@ def create_stats_embed(data: Dict[str, Any], mode: str) -> discord.Embed:
             match_history += line + "\n"
 
         if match_history:
-            embed.add_field(
-                name="🎯 Histórico de Partidas", value=match_history, inline=False
-            )
+            embed.add_field(name="🎯 Match History", value=match_history, inline=False)
 
     if len(embed.fields) == 0:
-        embed.description += "\n⚠️ Não foram encontradas estatísticas para este jogador."
+        embed.description += "\n⚠️ No statistics found for this player."
 
     # Add timestamp
     from datetime import datetime
@@ -481,11 +477,11 @@ def create_stats_embed(data: Dict[str, Any], mode: str) -> discord.Embed:
     embed.timestamp = datetime.utcnow()
 
     embed.set_footer(
-        text="Dados da API Henrik-3",
+        text="Data from Henrik-3 API",
         icon_url="https://valorant-api.com/assets/img/logo.png?v=1",
     )
 
-    # Set profile URL - URL encode para evitar caracteres inválidos
+    # Set profile URL - URL encode to avoid invalid characters
     from urllib.parse import quote
 
     profile_url = f"https://tracker.gg/valorant/profile/riot/{quote(player_name)}%23{quote(player_tag)}/overview"
