@@ -6,7 +6,6 @@ Bot de Discord em Python com funcionalidades para consultar estatísticas de Val
 
 - **📊 Estatísticas de Valorant**: 
   - `/stats` - Consulta stats detalhadas (Competitive/Premier) com histórico de partidas
-  - `/ranked` - Consulta stats competitivas de jogadores
 - **🎯 Sistema LFG (Looking For Group)**: 
   - `/ranked` - Procura jogadores para jogar ranked (sistema de votação com botões)
   - `/ranked-cancel` - Cancela a sessão LFG ativa
