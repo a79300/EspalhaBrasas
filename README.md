@@ -7,6 +7,7 @@ Bot de Discord em Python com funcionalidades para consultar estatísticas de Val
 - **📊 Estatísticas de Valorant**: Consulta stats detalhadas de jogadores (Competitive/Premier)
 - **🎯 Sistema LFG (Looking For Group)**: Procura jogadores para jogar ranked
 - **🗺️ Rotação de Mapas**: Mostra os mapas atualmente em rotação no competitivo
+- **🎮 VLR.gg Matches**: Mostra jogos profissionais de Valorant (finalizados, ao vivo e próximos)
 - **🤖 Comandos Slash**: Interface moderna com comandos `/`
 
 ## 🛠️ Tecnologias
@@ -139,6 +140,31 @@ Mostra os mapas atualmente em rotação no Valorant competitivo.
 
 ---
 
+### `/vlr`
+Mostra os jogos de Valorant profissionais de hoje do VLR.gg (finalizados, ao vivo e próximos).
+
+**Exemplo:**
+```
+/vlr
+```
+
+**Informações mostradas:**
+- 🔴 Jogos finalizados (até 5)
+- � Jogos ao vivo (todos)
+- 🟢 Jogos próximos (até 5)
+- Placar atual/final de cada jogo
+- Informações do evento/torneio
+- Fase da competição
+- Bandeiras dos times/regiões
+- Links diretos para detalhes
+- Contador de jogos por categoria
+
+**Fontes de dados:**
+- https://www.vlr.gg/matches (jogos ao vivo e próximos)
+- https://www.vlr.gg/matches/results (jogos finalizados hoje)
+
+---
+
 ### `/help`
 Mostra a lista de todos os comandos disponíveis.
 
@@ -155,7 +181,8 @@ discord-bot/
 │   ├── help.py          # Comando /help
 │   ├── stats.py         # Comando /stats (Valorant)
 │   ├── lfg.py           # Comandos /ranked e /ranked-cancel
-│   └── maps.py          # Comando /maps
+│   ├── maps.py          # Comando /maps
+│   └── vlr.py           # Comando /vlr (VLR.gg matches)
 ├── events/
 │   └── error.py         # Tratamento de erros
 ├── utils/
@@ -213,10 +240,15 @@ Verifique se o `DISCORD_TOKEN` no ficheiro `.env` está correto.
 - O site thespike.gg pode estar temporariamente indisponível
 - Verifique a conexão à internet
 
+### "/vlr não mostra jogos"
+- O site vlr.gg pode estar temporariamente indisponível
+- Verifique a conexão à internet
+- O web scraping pode precisar de atualização se o site mudou a estrutura
+
 ## 📝 Notas
 
 - **API Henrik**: Gratuita com rate limits. Para uso intensivo, considere upgrade.
-- **Web Scraping**: O comando `/maps` depende da estrutura do site thespike.gg. Se mudarem o site, pode ser necessário atualizar o código.
+- **Web Scraping**: Os comandos `/maps` e `/vlr` dependem da estrutura dos sites thespike.gg e vlr.gg. Se mudarem os sites, pode ser necessário atualizar o código.
 - **Emojis de Rank**: Os emojis customizados estão configurados para um servidor específico. Para usar noutro servidor, atualize os IDs em `valorant_stats.py`.
 
 ## 🤝 Contribuições
@@ -236,6 +268,7 @@ Este projeto é open-source e está disponível sob a licença MIT.
 - [Henrik Valorant API](https://discord.gg/X3GaVkX2YN)
 - [Discord Developer Portal](https://discord.com/developers/applications)
 - [TheSpike.gg](https://www.thespike.gg/valorant/maps/map-pool)
+- [VLR.gg](https://www.vlr.gg/matches)
 
 ## ✨ Autor
 
