@@ -60,10 +60,10 @@ class LFG(commands.Cog):
     @app_commands.command(name="ranked", description="Find players for ranked games")
     @app_commands.describe(
         game_name="Game name (e.g.: Valorant, CS2, League of Legends)",
-        horario="Time to start (HH:MM format, optional)",
+        time="Time to start (HH:MM format, optional)",
     )
     async def ranked(
-        self, interaction: discord.Interaction, game_name: str, horario: str = None
+        self, interaction: discord.Interaction, game_name: str, time: str = None
     ):
         """Find players to play with - creates a voting session"""
 
@@ -71,10 +71,10 @@ class LFG(commands.Cog):
         end_time = None
         time_str = ""
 
-        if horario:
+        if time:
             try:
                 # Validate HH:MM format
-                hours, minutes = horario.split(":")
+                hours, minutes = time.split(":")
                 hours = int(hours)
                 minutes = int(minutes)
 
@@ -105,7 +105,7 @@ class LFG(commands.Cog):
                     )
                     return
 
-                time_str = f" at **{horario}**"
+                time_str = f" at **{time}**"
 
             except ValueError:
                 await interaction.response.send_message(
@@ -153,8 +153,8 @@ class LFG(commands.Cog):
             name="⏰ Voting ends in", value=f"`{duration_str}`", inline=True
         )
 
-        if horario:
-            embed.add_field(name="🕐 Game time", value=f"`{horario}`", inline=True)
+        if time:
+            embed.add_field(name="🕐 Game time", value=f"`{time}`", inline=True)
 
         # Send message with button view
         await interaction.response.send_message(embed=embed)
@@ -167,7 +167,7 @@ class LFG(commands.Cog):
             "creator": interaction.user,
             "game_name": game_name,
             "end_time": end_time,
-            "game_time": horario,
+            "game_time": time,
             "players": [interaction.user.id],  # Creator is automatically in
         }
 
@@ -260,7 +260,7 @@ class LFG(commands.Cog):
             players = session["players"]
             game_name = session["game_name"]
             end_time = session["end_time"]
-            horario = session["game_time"]
+            time = session["game_time"]
 
             # Get player list with avatars as individual lines
             if len(players) > 0:
@@ -285,7 +285,7 @@ class LFG(commands.Cog):
             # Update embed
             embed = discord.Embed(
                 title=f"🎮 À procura de jogadores para {game_name}",
-                description=f"{session['creator'].mention} está à procura de jogadores{' às **' + horario + '**' if horario else ''}!",
+                description=f"{session['creator'].mention} está à procura de jogadores{' às **' + time + '**' if time else ''}!",
                 color=0xFF4655,
             )
 
@@ -310,8 +310,8 @@ class LFG(commands.Cog):
                 name="⏰ Voting ends in", value=f"`{duration_str}`", inline=True
             )
 
-            if horario:
-                embed.add_field(name="🕐 Game time", value=f"`{horario}`", inline=True)
+            if time:
+                embed.add_field(name="🕐 Game time", value=f"`{time}`", inline=True)
 
             await message.edit(embed=embed)
 
