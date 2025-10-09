@@ -12,7 +12,7 @@ class VLR(commands.Cog):
         self.bot = bot
 
     async def scrape_matches_from_url(self, url):
-        """Scrape matches from a specific VLR.gg URL"""
+        """Scrape matches from a specific VLR.gg URL - Only matches from 'Today' section"""
         headers = {
             "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36"
         }
@@ -27,8 +27,22 @@ class VLR(commands.Cog):
 
                 matches = []
 
-                # Find all match cards - VLR.gg uses 'match-item' class
-                match_cards = soup.find_all("a", class_="match-item")
+                # Find all wf-label tags to locate "Today" section
+                wf_labels = soup.find_all("div", class_="wf-label")
+                
+                today_card = None
+                for label in wf_labels:
+                    if "Today" in label.get_text():
+                        # Found the "Today" label, now find the next wf-card sibling
+                        today_card = label.find_next_sibling("div", class_="wf-card")
+                        break
+                
+                # If no "Today" section found, return empty list
+                if not today_card:
+                    return []
+                
+                # Find all match cards inside the Today wf-card
+                match_cards = today_card.find_all("a", class_="match-item")
 
                 for card in match_cards:
                     try:
@@ -129,26 +143,26 @@ class VLR(commands.Cog):
 
     async def scrape_all_matches(self):
         """Scrape both upcoming/live matches and completed matches from today"""
-        # Scrape upcoming and live matches
+        # Scrape upcoming and live matches from Today section
         upcoming_matches = await self.scrape_matches_from_url(
             "https://www.vlr.gg/matches"
         )
 
-        # Scrape completed matches (results)
+        # Scrape completed matches from Today section (results)
         completed_matches = await self.scrape_matches_from_url(
             "https://www.vlr.gg/matches/results"
         )
 
-        # Combine all matches
+        # Combine all matches (no limits needed since we're only getting Today's matches)
         all_matches = []
 
         # Add completed matches first (sorted by most recent)
         if completed_matches:
-            all_matches.extend(completed_matches[:5])  # Limit to 5 recent completed
+            all_matches.extend(completed_matches)
 
         # Add upcoming/live matches
         if upcoming_matches:
-            all_matches.extend(upcoming_matches[:10])  # Limit to 10 upcoming/live
+            all_matches.extend(upcoming_matches)
 
         return all_matches
 
@@ -212,7 +226,7 @@ class VLR(commands.Cog):
 
         # Add completed matches section
         if completed:
-            for match in completed[:5]:
+            for match in completed:
                 status_emoji = self.get_status_emoji(match["status"])
 
                 # Format team names with flags
@@ -278,7 +292,7 @@ class VLR(commands.Cog):
 
         # Add upcoming matches section
         if upcoming:
-            for match in upcoming[:5]:
+            for match in upcoming:
                 status_emoji = self.get_status_emoji(match["status"])
 
                 # Format team names with flags
