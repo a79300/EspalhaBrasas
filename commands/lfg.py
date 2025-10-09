@@ -199,7 +199,7 @@ class LFG(commands.Cog):
                 await self.update_lfg_embed(session)
 
             except Exception as e:
-                print(f"❌ Erro no auto-update: {str(e)}")
+                print(f"❌ Error in auto-update: {str(e)}")
                 break
 
     async def lfg_timer(self, message_id: int, channel):
@@ -247,7 +247,7 @@ class LFG(commands.Cog):
             except discord.NotFound:
                 pass  # Message was deleted
             except Exception as e:
-                print(f"❌ Erro no timer LFG: {str(e)}")
+                print(f"❌ Error in LFG timer: {str(e)}")
 
             # Remove from active sessions
             if message_id in self.active_lfgs:
@@ -270,7 +270,7 @@ class LFG(commands.Cog):
                     # Each player gets their own line with clickable avatar
                     player_list += f"{i}. {user.mention}\n"
             else:
-                player_list = "Ninguém se juntou ainda..."
+                player_list = "No one has joined yet..."
 
             # Calculate remaining time
             duration = end_time - datetime.now()
@@ -284,14 +284,14 @@ class LFG(commands.Cog):
 
             # Update embed
             embed = discord.Embed(
-                title=f"🎮 À procura de jogadores para {game_name}",
-                description=f"{session['creator'].mention} está à procura de jogadores{' às **' + time + '**' if time else ''}!",
+                title=f"🎮 Looking for players for {game_name}",
+                description=f"{session['creator'].mention} is looking for players{' at **' + time + '**' if time else ''}!",
                 color=0xFF4655,
             )
 
             # Add creator's avatar as author icon
             embed.set_author(
-                name=f"Criado por {session['creator'].display_name}",
+                name=f"Created by {session['creator'].display_name}",
                 icon_url=session["creator"].display_avatar.url,
             )
 
@@ -316,7 +316,7 @@ class LFG(commands.Cog):
             await message.edit(embed=embed)
 
         except Exception as e:
-            print(f"❌ Erro ao atualizar embed: {str(e)}")
+            print(f"❌ Error updating embed: {str(e)}")
 
     async def finish_lfg_session(self, message_id: int, channel):
         """Finish LFG session when team is full or time expires"""
@@ -343,8 +343,8 @@ class LFG(commands.Cog):
 
             # Create final embed
             embed = discord.Embed(
-                title=f"✅ Equipa formada para {game_name}!",
-                description=f"**{len(players)} jogadores** confirmados!",
+                title=f"✅ Team formed for {game_name}!",
+                description=f"**{len(players)} players** confirmed!",
                 color=0xFF4655,
             )
 
@@ -352,11 +352,11 @@ class LFG(commands.Cog):
             first_player = await self.bot.fetch_user(players[0])
             embed.set_thumbnail(url=first_player.display_avatar.url)
 
-            embed.add_field(name="👥 Jogadores", value=player_list, inline=False)
+            embed.add_field(name="👥 Players", value=player_list, inline=False)
 
             if game_time:
                 embed.add_field(
-                    name="🕐 Hora do jogo", value=f"`{game_time}`", inline=False
+                    name="🕐 Game time", value=f"`{game_time}`", inline=False
                 )
 
             embed.set_footer(text="Good luck and have fun! 🎯")
@@ -376,7 +376,7 @@ class LFG(commands.Cog):
         except discord.NotFound:
             pass  # Message was deleted
         except Exception as e:
-            print(f"❌ Erro ao finalizar sessão: {str(e)}")
+            print(f"❌ Error finishing session: {str(e)}")
 
         # Remove from active sessions
         if message_id in self.active_lfgs:
