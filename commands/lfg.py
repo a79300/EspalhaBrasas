@@ -44,8 +44,8 @@ class LFGView(discord.ui.View):
             # Just defer to not show message
             await interaction.response.defer()
 
-            # If reached 5 players, finish session immediately
-            if len(session["players"]) >= 5:
+            # If reached required number of players, finish session immediately
+            if len(session["players"]) >= session.get("players_required", 5):
                 await self.cog.finish_lfg_session(self.message_id, interaction.channel)
             else:
                 # Update the embed
@@ -61,11 +61,19 @@ class LFG(commands.Cog):
     @app_commands.describe(
         game_name="Game name (e.g.: Valorant, CS2, League of Legends)",
         time="Time to start (HH:MM format, optional)",
+        players_required="Number of players required to play (optional, must be > 1)",
     )
     async def ranked(
-        self, interaction: discord.Interaction, game_name: str, time: str = None
+        self, interaction: discord.Interaction, game_name: str, time: str = None, players_required: int = 5
     ):
         """Find players to play with - creates a voting session"""
+
+        # Validate players_required
+        if players_required is not None and players_required < 2:
+            await interaction.response.send_message(
+                "❌ Number of players must be at least 2.", ephemeral=True
+            )
+            return
 
         # Parse and validate time if provided
         end_time = None
@@ -144,7 +152,7 @@ class LFG(commands.Cog):
 
         # Show creator as first player
         embed.add_field(
-            name="📊 Interested Players (1/5)",
+            name=f"📊 Interested Players (1/{players_required})",
             value=f"1. {interaction.user.mention}",
             inline=False,
         )
@@ -164,10 +172,12 @@ class LFG(commands.Cog):
         message_id = message.id
         self.active_lfgs[message_id] = {
             "message": message,
+            "channel": interaction.channel,
             "creator": interaction.user,
             "game_name": game_name,
             "end_time": end_time,
             "game_time": time,
+            "players_required": players_required,
             "players": [interaction.user.id],  # Creator is automatically in
         }
 
@@ -224,7 +234,8 @@ class LFG(commands.Cog):
         # Check if we have enough players
         players = lfg_data["players"]
 
-        if len(players) >= 5:
+        required = lfg_data.get("players_required", 5)
+        if len(players) >= required:
             # Team is complete - finish the session normally
             await self.finish_lfg_session(message_id, channel)
         else:
@@ -235,7 +246,7 @@ class LFG(commands.Cog):
 
                 embed = discord.Embed(
                     title=f"❌ Voting cancelled",
-                    description=f"The **{game_name}** session was cancelled due to lack of players.\nOnly **{len(players)} out of 5** players confirmed.",
+                    description=f"The **{game_name}** session was cancelled due to lack of players.\nOnly **{len(players)} out of {required}** players confirmed.",
                     color=0xFF0000,
                 )
 
@@ -256,7 +267,10 @@ class LFG(commands.Cog):
     async def update_lfg_embed(self, session):
         """Update the LFG embed with current player list"""
         try:
-            message = session["message"]
+            # Fetch message by ID instead of using cached message object
+            channel = session["channel"]
+            message = await channel.fetch_message(session["message"].id)
+            
             players = session["players"]
             game_name = session["game_name"]
             end_time = session["end_time"]
@@ -300,8 +314,9 @@ class LFG(commands.Cog):
                 first_player = await self.bot.fetch_user(players[0])
                 embed.set_thumbnail(url=first_player.display_avatar.url)
 
+            required = session.get("players_required", 5)
             embed.add_field(
-                name=f"📊 Interested Players ({len(players)}/5)",
+                name=f"📊 Interested Players ({len(players)}/{required})",
                 value=player_list,
                 inline=False,
             )
