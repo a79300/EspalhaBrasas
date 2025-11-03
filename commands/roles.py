@@ -169,101 +169,156 @@ class Roles(commands.Cog):
         # Add persistent view for existing role messages
         self.bot.add_view(RoleView())
     
-    async def find_existing_role_messages(self):
-        """Find and register existing role messages"""
-        for guild in self.bot.guilds:
-            for channel in guild.text_channels:
-                try:
-                    # Check if bot has permission to read message history
-                    if not channel.permissions_for(guild.me).read_message_history:
+    async def find_existing_role_messages(self, guild=None):
+        """Find and register existing role messages in a specific guild"""
+        guilds_to_search = [guild] if guild else self.bot.guilds
+        
+        print(f"Searching for existing role messages in {len(guilds_to_search)} guild(s)")
+        
+        for search_guild in guilds_to_search:
+            print(f"Searching guild: {search_guild.name} (ID: {search_guild.id})")
+            
+            try:
+                for channel in search_guild.text_channels:
+                    try:
+                        # Check if bot has permission to read message history
+                        if not channel.permissions_for(search_guild.me).read_message_history:
+                            print(f"No read permission for #{channel.name}")
+                            continue
+                            
+                        print(f"Checking channel #{channel.name} for role messages...")
+                        
+                        # Search for role selection messages in this channel
+                        message_count = 0
+                        async for message in channel.history(limit=50):
+                            message_count += 1
+                            if (message.author == self.bot.user and 
+                                message.embeds and 
+                                len(message.embeds) > 0 and 
+                                "Game Role Selection" in message.embeds[0].title):
+                                # Found a role message, register it
+                                self.role_messages[channel.id] = message.id
+                                print(f"Found existing role message in #{channel.name} (Guild: {search_guild.name}, ID: {message.id})")
+                                break  # Only store the most recent one per channel
+                        
+                        print(f"Checked {message_count} messages in #{channel.name}")
+                        
+                    except Exception as e:
+                        print(f"Error checking channel #{channel.name}: {e}")
                         continue
                         
-                    # Search for role selection messages in this channel
-                    async for message in channel.history(limit=50):
-                        if (message.author == self.bot.user and 
-                            message.embeds and 
-                            len(message.embeds) > 0 and 
-                            "Game Role Selection" in message.embeds[0].title):
-                            # Found a role message, register it
-                            self.role_messages[channel.id] = message.id
-                            print(f"Found existing role message in #{channel.name} (ID: {message.id})")
-                            break  # Only store the most recent one per channel
-                except Exception as e:
-                    # Skip channels we can't access
-                    continue
+            except Exception as e:
+                print(f"Error processing guild {search_guild.name}: {e}")
+                continue
+        
+        print(f"Finished searching. Found {len(self.role_messages)} tracked role messages.")
 
     @app_commands.command(name="roles", description="Create a persistent role selection menu")
     async def roles(self, interaction: discord.Interaction):
         """Create a persistent role selection embed with dropdown"""
         
-        # Check if user has manage roles permission
-        if not interaction.user.guild_permissions.manage_roles:
-            await interaction.response.send_message(
-                "❌ You need 'Manage Roles' permission to use this command!", 
-                ephemeral=True
+        try:
+            # Defer the interaction immediately to prevent timeout (but not ephemeral)
+            await interaction.response.defer()
+            
+            # Check if user has manage roles permission
+            if not interaction.user.guild_permissions.manage_roles:
+                await interaction.followup.send(
+                    "❌ You need 'Manage Roles' permission to use this command!", 
+                    ephemeral=True
+                )
+                return
+            
+            channel = interaction.channel
+            guild = interaction.guild
+            
+            print(f"Processing /roles command in guild: {guild.name} (ID: {guild.id}), channel: #{channel.name} (ID: {channel.id})")
+            
+            # Quick check for existing message in this channel only (limit to 10 recent messages)
+            existing_message = None
+            if channel.id not in self.role_messages:
+                print(f"Quick check for existing role message in #{channel.name}...")
+                try:
+                    async for message in channel.history(limit=10):
+                        if (message.author == self.bot.user and 
+                            message.embeds and 
+                            len(message.embeds) > 0 and 
+                            message.embeds[0].title and
+                            "Game Role Selection" in message.embeds[0].title):
+                            # Found a role message, register it
+                            self.role_messages[channel.id] = message.id
+                            existing_message = message
+                            print(f"Found existing role message: {message.id}")
+                            break
+                except Exception as e:
+                    print(f"Error during quick search: {e}")
+            else:
+                # Try to fetch the tracked message
+                try:
+                    existing_message = await channel.fetch_message(self.role_messages[channel.id])
+                    print(f"Found tracked role message: {existing_message.id}")
+                except discord.NotFound:
+                    # Message was deleted, remove from tracking
+                    print(f"Tracked role message was deleted, removing from tracking")
+                    del self.role_messages[channel.id]
+                    existing_message = None
+                except Exception as e:
+                    print(f"Error fetching tracked message: {e}")
+                    existing_message = None
+            
+            # Create embed
+            embed = discord.Embed(
+                title="Game Role Selection",
+                description="Select the games you play to get the corresponding roles!\n\n"
+                           "**Available roles:**\n"
+                           "**Valorant Ranked** - For Valorant ranked players\n"
+                           "**Valorant Premier** - For Valorant premier players\n"
+                           "**League of Legends** - For LoL players\n"
+                           "**Mmorpg** - For MMORPG enthusiasts\n"
+                           "**Valheim** - For Valheim players\n\n"
+                           "**How to use:**\n"
+                           "• Select the games you want roles for from the dropdown\n"
+                           "• Your roles will match exactly what you select\n"
+                           "• Select nothing in the dropdown to remove all roles\n"
+                           "• Roles will be created automatically if they don't exist",
+                color=0x5865F2
             )
-            return
-        
-        channel = interaction.channel
-        
-        # If this is the first time we're checking this channel, search for existing messages
-        if channel.id not in self.role_messages:
-            await self.find_existing_role_messages()
-        
-        # Check if there's already a role message in this channel
-        existing_message = None
-        if channel.id in self.role_messages:
-            try:
-                existing_message = await channel.fetch_message(self.role_messages[channel.id])
-                print(f"Found tracked role message: {existing_message.id}")
-            except discord.NotFound:
-                # Message was deleted, remove from tracking
-                print(f"Tracked role message was deleted, removing from tracking")
-                del self.role_messages[channel.id]
-                existing_message = None
-            except Exception as e:
-                print(f"Error fetching tracked message: {e}")
-                existing_message = None
-        
-        # Create embed
-        embed = discord.Embed(
-            title="Game Role Selection",
-            description="Select the games you play to get the corresponding roles!\n\n"
-                       "**Available roles:**\n"
-                       "**Valorant Ranked** - For Valorant ranked players\n"
-                       "**Valorant Premier** - For Valorant premier players\n"
-                       "**League of Legends** - For LoL players\n"
-                       "**Mmorpg** - For MMORPG enthusiasts\n"
-                       "**Valheim** - For Valheim players\n\n"
-                       "**How to use:**\n"
-                       "• Select the games you want roles for from the dropdown\n"
-                       "• Your roles will match exactly what you select\n"
-                       "• Select nothing in the dropdown to remove all roles\n"
-                       "• Roles will be created automatically if they don't exist",
-            color=0x5865F2
-        )
-        
-        embed.set_footer(text="This menu will stay active permanently • Select your games below!")
-        embed.set_thumbnail(url=interaction.guild.icon.url if interaction.guild.icon else None)
-        
-        # Create view with dropdown
-        view = RoleView()
-        
-        if existing_message:
-            # Update existing message
-            try:
-                await existing_message.edit(embed=embed, view=view)
-                await interaction.response.send_message("✅ Role selection menu updated!", ephemeral=True)
-            except Exception as e:
-                # If failed to edit, send new message
-                await interaction.response.send_message(embed=embed, view=view)
-                message = await interaction.original_response()
+            
+            embed.set_footer(text="This menu will stay active permanently • Select your games below!")
+            embed.set_thumbnail(url=interaction.guild.icon.url if interaction.guild.icon else None)
+            
+            # Create view with dropdown
+            view = RoleView()
+            
+            if existing_message:
+                # Update existing message
+                try:
+                    await existing_message.edit(embed=embed, view=view)
+                    await interaction.followup.send("✅ Role selection menu updated!", ephemeral=True)
+                    print(f"Updated existing role message {existing_message.id}")
+                except Exception as e:
+                    print(f"Failed to update existing message: {e}")
+                    # If failed to edit, send new message
+                    message = await interaction.followup.send(embed=embed, view=view)
+                    self.role_messages[channel.id] = message.id
+                    print(f"Created new role message {message.id} after update failure")
+            else:
+                # Send new message (public)
+                message = await interaction.followup.send(embed=embed, view=view)
                 self.role_messages[channel.id] = message.id
-        else:
-            # Send new message
-            await interaction.response.send_message(embed=embed, view=view)
-            message = await interaction.original_response()
-            self.role_messages[channel.id] = message.id
+                print(f"Created new role message {message.id}")
+                
+        except Exception as e:
+            print(f"Critical error in /roles command: {e}")
+            import traceback
+            traceback.print_exc()
+            try:
+                if not interaction.response.is_done():
+                    await interaction.response.send_message("❌ An error occurred while processing the command.", ephemeral=True)
+                else:
+                    await interaction.followup.send("❌ An error occurred while processing the command.", ephemeral=True)
+            except:
+                pass
 
     @app_commands.command(name="roles-remove", description="Remove specific game roles from yourself")
     @app_commands.describe(
