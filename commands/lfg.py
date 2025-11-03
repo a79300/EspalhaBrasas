@@ -164,8 +164,8 @@ class LFG(commands.Cog):
         if time:
             embed.add_field(name="🕐 Game time", value=f"`{time}`", inline=True)
 
-        # Send message with button view
-        await interaction.response.send_message(embed=embed)
+        # Send message with button view and @everyone mention
+        await interaction.response.send_message(content="@everyone", embed=embed)
         message = await interaction.original_response()
 
         # Store LFG session

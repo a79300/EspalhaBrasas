@@ -36,6 +36,7 @@ async def main():
         "commands.lfg",
         "commands.maps",
         "commands.vlr",
+        "commands.roles",
         "events.error",
     ]
 

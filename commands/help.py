@@ -30,6 +30,26 @@ class HelpCommand(commands.Cog):
             inline=False,
         )
         embed.add_field(
+            name="/roles",
+            value="Create a permanent role selection menu for games\n*Requires Manage Roles permission*",
+            inline=False,
+        )
+        embed.add_field(
+            name="/roles-remove [role_name]",
+            value="Remove a specific game role from yourself\n**Example:** `/roles-remove Valorant Ranked`",
+            inline=False,
+        )
+        embed.add_field(
+            name="/roles-list",
+            value="List all available game roles in the server",
+            inline=False,
+        )
+        embed.add_field(
+            name="/roles-cleanup",
+            value="Remove old role selection messages from current channel\n*Requires Manage Messages permission*",
+            inline=False,
+        )
+        embed.add_field(
             name="/maps",
             value="Shows current competitive Valorant map rotation\n**Example:** `/maps`",
             inline=False,
