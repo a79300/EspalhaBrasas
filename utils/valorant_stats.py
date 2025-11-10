@@ -346,7 +346,8 @@ def create_stats_embed(data: Dict[str, Any], mode: str) -> discord.Embed:
     )
 
     # Create embed
-    mode_title = "Ranked" if mode == "competitive" else "Premier"
+    mode_title = "Competitive" if mode == "competitive" else "Premier"
+    print(f"DEBUG: mode parameter = {mode}, mode_title = {mode_title}")
     embed = discord.Embed(
         title=f"🎮 Valorant Profile - {player_name}#{player_tag}",
         description=f"┗━━ Region: **{region}**",

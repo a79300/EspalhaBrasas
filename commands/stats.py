@@ -97,9 +97,9 @@ class Stats(commands.Cog):
                     await interaction.followup.send(f"❌ API error: {error_type}")
                     return
 
-            # Create embed
-            mode_name = "Competitive" if mode_value == "competitive" else "Premier"
-            embed = create_stats_embed(data, mode_name)
+            # Create embed - pass the actual mode_value instead of mode_name
+            print(f"DEBUG: mode_value = {mode_value}")
+            embed = create_stats_embed(data, mode_value)
 
             # Send response
             await interaction.followup.send(embed=embed)
@@ -109,8 +109,9 @@ class Stats(commands.Cog):
             if "Player not found" in error_msg or "404" in error_msg:
                 await interaction.followup.send(f"❌ Player `{player}` not found!")
             elif "No data found" in error_msg:
+                mode_display = "Competitive" if mode_value == "competitive" else "Premier"
                 await interaction.followup.send(
-                    f"❌ No data available for `{player}` in {mode_name} mode!"
+                    f"❌ No data available for `{player}` in {mode_display} mode!"
                 )
             else:
                 await interaction.followup.send(f"❌ Error fetching stats: {error_msg}")
