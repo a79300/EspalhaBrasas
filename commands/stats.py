@@ -75,6 +75,28 @@ class Stats(commands.Cog):
                 player_name, player_tag, mode_value, self.api_key
             )
 
+            # Check for API errors
+            if "error" in data:
+                error_type = data["error"]
+                status = data.get("status", "unknown")
+                
+                if error_type == "account":
+                    if status == 404:
+                        await interaction.followup.send(f"❌ Player `{player}` not found!")
+                        return
+                    else:
+                        await interaction.followup.send(f"❌ Error fetching player data (Status: {status})")
+                        return
+                elif error_type == "matches":
+                    await interaction.followup.send(f"❌ Error fetching match data for `{player}`")
+                    return
+                elif error_type == "lifetime":
+                    await interaction.followup.send(f"❌ Error fetching lifetime stats for `{player}`")
+                    return
+                else:
+                    await interaction.followup.send(f"❌ API error: {error_type}")
+                    return
+
             # Create embed
             mode_name = "Competitive" if mode_value == "competitive" else "Premier"
             embed = create_stats_embed(data, mode_name)
